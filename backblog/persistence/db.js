@@ -1,56 +1,153 @@
 var mongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/";
-
-exports.dayWeek = function(req, res) {
-    gettodb([{
-            $group: { _id: "$Day_of_Week", total: { $sum: 1 } }
-        },
-        {
-            $sort: { total: -1 }
-        }
-    ], (documentos) => {
+var ObjectId = require('mongodb').ObjectId;
+/********************** GET *****************************/
+exports.getperson = function(req, res) {
+    select(req.body, 'persons', (documentos) => {
         res.send(documentos);
     })
 }
 
-exports.numVechicle = function(req, res) {
-    gettodb([{
-            $group: { _id: "$numCars", total: { $sum: 1 } }
-        },
-        {
-            $sort: { total: -1 }
-        }, {
-            $limit: 10
-        }
-    ], (documentos) => {
+exports.getblogs = function(req, res) {
+    select(req.body, 'blogs', (documentos) => {
         res.send(documentos);
     })
 }
 
-exports.PoliceReport = function(req, res) {
-    gettodb([{
-            $group: { _id: "$Police_Report", total: { $sum: 1 } }
-        },
-        {
-            $sort: { total: -1 }
-        }
-    ], (documentos) => {
+exports.getcomments = function(req, res) {
+    select(req.body, 'comments', (documentos) => {
         res.send(documentos);
     })
 }
 
+exports.getpublications = function(req, res) {
+    select(req.body, 'publications', (documentos) => {
+        res.send(documentos);
+    })
+}
 
-function gettodb(query, callback) {
+/********************** POST *****************************/
+exports.postPerson = function(req, res) {
+    insert(req.body, 'persons', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+exports.postBlogs = function(req, res) {
+    insert(req.body, 'blogs', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+exports.postComments = function(req, res) {
+    insert(req.body, 'comments', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+exports.postPublications = function(req, res) {
+    insert(req.body, 'publications', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+/********************** REMOVE *****************************/
+exports.removePerson = function(req, res) {
+    remove(req.body, 'persons', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+exports.removeBlogs = function(req, res) {
+    remove(req.body, 'blogs', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+exports.removeComments = function(req, res) {
+    remove(req.body, 'comments', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+exports.removePublications = function(req, res) {
+    remove(req.body, 'publications', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+/********************** UPDATE *****************************/
+exports.UpdatePerson = function(req, res) {
+    Update({ "id_person": req.body.id_person }, req.body, 'persons', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+function select(query, collection, callback) {
+    mongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) { //here db is the client obj
+        if (err) throw err;
+        var dbase = db.db("electiva2"); //here
+        selectData(query, collection, dbase, callback)
+    });
+}
+
+const selectData = async function(query, col, db, callback) {
+    const collection = db.collection(col);
+    collection.find(query).toArray(function(err, docs) {
+        callback(docs)
+    });
+}
+
+function insert(query, collection, callback) {
     mongoClient.connect(url, function(err, db) { //here db is the client obj
         if (err) throw err;
         var dbase = db.db("electiva2"); //here
-        findDateDb(query, dbase, callback)
+        insertData(query, collection, dbase, callback)
     });
 }
 
-const findDateDb = async function(query, db, callback) {
-    const collection = db.collection('accidente');
-    collection.aggregate(query).toArray(function(err, docs) {
-        callback(docs)
+const insertData = async function(query, col, db, callback) {
+    const collection = db.collection(col);
+    try {
+        collection.insertOne(query);
+        callback({ "status": 200, "message": "guardado exitoso" });
+    } catch (error) {
+        callback({ "status": 400, "message": "upsss, ocurrio un error" });
+    }
+}
+
+function remove(query, collection, callback) {
+    mongoClient.connect(url, function(err, db) { //here db is the client obj
+        if (err) throw err;
+        var dbase = db.db("electiva2"); //here
+        removeData(query, collection, dbase, callback)
     });
+}
+
+const removeData = async function(query, col, db, callback) {
+    const collection = db.collection(col);
+    try {
+        collection.remove(query);
+        callback({ "status": 200, "message": "eliminado exitoso" });
+    } catch (error) {
+        callback({ "status": 400, "message": "upsss, ocurrio un error" });
+    }
+}
+
+function Update(condition, set, collection, callback) {
+    mongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) { //here db is the client obj
+        if (err) throw err;
+        var dbase = db.db("electiva2");
+        UpdateData(condition, set, collection, dbase, callback)
+    });
+}
+
+const UpdateData = async function(condition, set, col, db, callback) {
+    const collection = db.collection(col);
+    try {
+        collection.update(condition, set);
+        callback({ "status": 200, "message": "actualizacion exitosa" });
+    } catch (error) {
+        callback({ "status": 400, "message": "upsss, ocurrio un error" });
+    }
 }
