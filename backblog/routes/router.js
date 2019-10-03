@@ -27,11 +27,7 @@ exports.assignRoutes = function(app) {
 
     //*************SOLICITUDES REMOVE******************
     app.put('/person', db.UpdatePerson);
-
-
-    /*    app.get('/numVechicle', db.numVechicle);
-        app.get('/countyName', db.countyName);
-        app.get('/PoliceReport', db.PoliceReport);
-        app.get('/month', db.month);
-         */
+    app.put('/blogs', db.UpdateBlogs);
+    app.put('/comments', db.UpdateComments);
+    app.put('/publications', db.UpdatePublications);
 }

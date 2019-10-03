@@ -83,6 +83,24 @@ exports.UpdatePerson = function(req, res) {
     });
 }
 
+exports.UpdateBlogs = function(req, res) {
+    Update({ "id_blog": req.body.id_blog }, req.body, 'blogs', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+exports.UpdateComments = function(req, res) {
+    Update({ "id_comment": req.body.id_comment }, req.body, 'comments', (documentos) => {
+        res.send(documentos);
+    });
+}
+
+exports.UpdatePublications = function(req, res) {
+    Update({ "id_publication": req.body.id_publication }, req.body, 'publications', (documentos) => {
+        res.send(documentos);
+    });
+}
+
 function select(query, collection, callback) {
     mongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) { //here db is the client obj
         if (err) throw err;
