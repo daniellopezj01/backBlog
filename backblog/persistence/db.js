@@ -1,6 +1,5 @@
 var mongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/";
-var ObjectId = require('mongodb').ObjectId;
 /********************** GET *****************************/
 exports.getperson = function(req, res) {
     select(req.body, 'persons', (documentos) => {
@@ -26,7 +25,12 @@ exports.getpublications = function(req, res) {
     })
 }
 
-/********************** POST *****************************/
+exports.getpublicationsName = function(req, res) {
+        select("{},{ public_title:1}", 'publications', (documentos) => {
+            res.send(documentos);
+        })
+    }
+    /********************** POST *****************************/
 exports.postPerson = function(req, res) {
     insert(req.body, 'persons', (documentos) => {
         res.send(documentos);
@@ -53,13 +57,15 @@ exports.postPublications = function(req, res) {
 
 /********************** REMOVE *****************************/
 exports.removePerson = function(req, res) {
-    remove(req.body, 'persons', (documentos) => {
+    var id_person = parseInt(req.params.id_person);
+    remove({ "id_person": id_person }, 'persons', (documentos) => {
         res.send(documentos);
     });
 }
 
 exports.removeBlogs = function(req, res) {
-    remove(req.body, 'blogs', (documentos) => {
+    var id_blog = parseInt(req.params.id_blog);
+    remove({ "id_blog": id_blog }, 'blogs', (documentos) => {
         res.send(documentos);
     });
 }
@@ -71,7 +77,9 @@ exports.removeComments = function(req, res) {
 }
 
 exports.removePublications = function(req, res) {
-    remove(req.body, 'publications', (documentos) => {
+    var id_publication = parseInt(req.params.id_publication);
+    console.log(id_publication)
+    remove({ "id_publication": id_publication }, 'publications', (documentos) => {
         res.send(documentos);
     });
 }
@@ -135,7 +143,7 @@ const insertData = async function(query, col, db, callback) {
 }
 
 function remove(query, collection, callback) {
-    mongoClient.connect(url, function(err, db) { //here db is the client obj
+    mongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) { //here db is the client obj
         if (err) throw err;
         var dbase = db.db("electiva2"); //here
         removeData(query, collection, dbase, callback)
@@ -145,7 +153,7 @@ function remove(query, collection, callback) {
 const removeData = async function(query, col, db, callback) {
     const collection = db.collection(col);
     try {
-        collection.remove(query);
+        collection.deleteOne(query);
         callback({ "status": 200, "message": "eliminado exitoso" });
     } catch (error) {
         callback({ "status": 400, "message": "upsss, ocurrio un error" });
